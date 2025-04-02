@@ -306,7 +306,7 @@
             font-size: 14px;
             margin: 0 15px;
         }
-        
+
         /* Video Player Modal */
         .video-modal {
             display: none;
@@ -433,7 +433,7 @@
     <div class="pagination" id="pagination">
         <!-- Tombol pagination akan ditampilkan di sini -->
     </div>
-    
+
     <!-- Video Player Modal -->
     <div class="video-modal" id="video-modal">
         <div class="video-modal-content">
@@ -454,25 +454,25 @@
         // Dark mode functionality
         const themeToggle = document.getElementById('theme-toggle');
         const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-        
+
         // Check for saved theme preference or use system preference
         const currentTheme = localStorage.getItem('theme') || 
                            (prefersDarkScheme.matches ? 'dark' : 'light');
-        
+
         if (currentTheme === 'dark') {
             document.body.classList.add('dark-mode');
             themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
         } else {
             themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
         }
-        
+
         // Toggle theme
         themeToggle.addEventListener('click', function() {
             document.body.classList.toggle('dark-mode');
-            
+
             const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
             localStorage.setItem('theme', theme);
-            
+
             if (theme === 'dark') {
                 themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
             } else {
@@ -502,7 +502,7 @@
         // Fungsi untuk mencari video menggunakan YouTube API
         async function searchVideos() {
             query = document.getElementById('search-input').value.trim();
-            
+
             if (!query) {
                 showError(true, 'Silakan masukkan kata kunci pencarian');
                 return;
@@ -511,7 +511,7 @@
             currentPage = 1;
             showLoading(true);
             showError(false);
-            
+
             try {
                 // First try our API
                 const apiUrl = `https://api.ferdev.my.id/search/youtube?query=${encodeURIComponent(query)}&page=${currentPage}`;
@@ -523,7 +523,7 @@
                 });
 
                 let videos = [];
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     if (data.message && data.message.data) {
@@ -539,7 +539,7 @@
                     videos = await searchYouTubeDirectly(query);
                     totalPages = 1; // YouTube API doesn't provide total pages
                 }
-                
+
                 displayVideos(videos);
                 setupPagination();
             } catch (error) {
@@ -554,13 +554,13 @@
         async function searchYouTubeDirectly(query) {
             try {
                 const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=12&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}&type=video`);
-                
+
                 if (!response.ok) {
                     throw new Error('YouTube API request failed');
                 }
-                
+
                 const data = await response.json();
-                
+
                 return data.items.map(item => {
                     return {
                         title: item.snippet.title,
@@ -598,7 +598,7 @@
                 // Thumbnail container
                 const thumbnailContainer = document.createElement('div');
                 thumbnailContainer.classList.add('video-thumbnail-container');
-                
+
                 const videoThumbnail = document.createElement('img');
                 videoThumbnail.classList.add('video-thumbnail');
                 videoThumbnail.src = video.thumbnail || 'https://via.placeholder.com/300x169?text=No+Thumbnail';
@@ -627,4 +627,170 @@
                 videoActions.classList.add('video-actions');
 
                 const watchButton = document.createElement('button');
-                watch
+                watchButton.classList.add('action-button', 'watch-button');
+                watchButton.textContent = 'Tonton';
+                watchButton.onclick = () => playVideo(video.videoId, video.title);
+                videoActions.appendChild(watchButton);
+
+                const fullscreenButton = document.createElement('button');
+                fullscreenButton.classList.add('action-button', 'fullscreen-button');
+                fullscreenButton.textContent = 'Fullscreen';
+                fullscreenButton.onclick = () => openVideoModal(video.videoId, video.title);
+                videoActions.appendChild(fullscreenButton);
+
+                videoInfo.appendChild(videoActions);
+                videoCard.appendChild(thumbnailContainer);
+                videoCard.appendChild(videoInfo);
+                resultsContainer.appendChild(videoCard);
+            });
+        }
+
+        // Fungsi untuk setup pagination
+        function setupPagination() {
+            const paginationDiv = document.getElementById('pagination');
+            paginationDiv.innerHTML = '';
+
+            if (totalPages <= 1) return;
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = 'Sebelumnya';
+            prevButton.disabled = currentPage === 1;
+            prevButton.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadPage(currentPage);
+                }
+            };
+            paginationDiv.appendChild(prevButton);
+
+            const pageInfo = document.createElement('div');
+            pageInfo.classList.add('page-info');
+            pageInfo.textContent = `Halaman ${currentPage} dari ${totalPages}`;
+            paginationDiv.appendChild(pageInfo);
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'Selanjutnya';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    loadPage(currentPage);
+                }
+            };
+            paginationDiv.appendChild(nextButton);
+        }
+
+        // Fungsi untuk memuat halaman tertentu
+        async function loadPage(page) {
+            showLoading(true);
+            showError(false);
+
+            try {
+                const apiUrl = `https://api.ferdev.my.id/search/youtube?query=${encodeURIComponent(query)}&page=${page}`;
+                const response = await fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'accept': '*/*',
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.message && data.message.data) {
+                        displayVideos(data.message.data);
+                        setupPagination();
+                    } else {
+                        throw new Error('Invalid response format');
+                    }
+                } else {
+                    throw new Error('API request failed');
+                }
+            } catch (error) {
+                console.error('Error loading page:', error);
+                showError(true, 'Gagal memuat halaman. Silakan coba lagi.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Fungsi untuk memutar video dalam iframe
+        function playVideo(videoId, title) {
+            const videoPlayer = document.getElementById('video-player');
+            videoPlayer.innerHTML = `
+                <iframe width="100%" height="100%" 
+                        src="https://www.youtube.com/embed/${videoId}?autoplay=1" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen></iframe>
+            `;
+            document.getElementById('video-title-modal').textContent = title || 'Video YouTube';
+            document.getElementById('video-modal').style.display = 'flex';
+        }
+
+        // Fungsi untuk membuka modal video
+        function openVideoModal(videoId, title) {
+            // Initialize YouTube Player API
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+            // Store video info for the onYouTubeIframeAPIReady callback
+            window.videoToPlay = { videoId, title };
+            window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+
+            document.getElementById('video-title-modal').textContent = title || 'Video YouTube';
+            document.getElementById('video-modal').style.display = 'flex';
+        }
+
+        // Callback when YouTube API is ready
+        function onYouTubeIframeAPIReady() {
+            if (!window.videoToPlay) return;
+
+            youtubePlayer = new YT.Player('video-player', {
+                height: '100%',
+                width: '100%',
+                videoId: window.videoToPlay.videoId,
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 1,
+                    'rel': 0,
+                    'modestbranding': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            event.target.playVideo();
+        }
+
+        function onPlayerStateChange(event) {
+            // You can handle player state changes here if needed
+        }
+
+        // Fungsi untuk menutup modal video
+        function closeVideoModal() {
+            document.getElementById('video-modal').style.display = 'none';
+            const videoPlayer = document.getElementById('video-player');
+            videoPlayer.innerHTML = '';
+            document.getElementById('video-title-modal').textContent = '';
+
+            // Stop the YouTube player if it exists
+            if (youtubePlayer && typeof youtubePlayer.stopVideo === 'function') {
+                youtubePlayer.stopVideo();
+            }
+        }
+
+        // Close modal when clicking outside the video
+        document.getElementById('video-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeVideoModal();
+            }
+        });
+    </script>
+</body>
+</html>
