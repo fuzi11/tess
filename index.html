@@ -143,8 +143,8 @@
                     loadingElement.style.display = 'none';
                     
                     // Tampilkan hasil
-                    if (data && data.length > 0) {
-                        displayResults(data);
+                    if (data && data.results && data.results.length > 0) {
+                        displayResults(data.results); // Asumsikan API mengembalikan array hasil pencarian di 'results'
                     } else {
                         resultsContainer.innerHTML = '<p>Tidak ada hasil ditemukan</p>';
                     }
