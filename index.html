@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telurku Search API</title>
+    <title>Telurku Video Search</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -88,7 +88,7 @@
     
     <div class="search-container">
         <input type="text" id="search-input" placeholder="Masukkan kata kunci pencarian...">
-        <button id="search-button">Cari</button>
+        <button id="search-button" onclick="searchVideos()">Cari</button>
     </div>
     
     <div class="loading" id="loading">
@@ -104,109 +104,72 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('search-input');
-            const searchButton = document.getElementById('search-button');
-            const resultsContainer = document.getElementById('results-container');
-            const loadingElement = document.getElementById('loading');
-            const errorElement = document.getElementById('error');
-            
-            // Fungsi untuk melakukan pencarian
-            function searchVideos() {
-                const query = searchInput.value.trim();
-                
-                if (query === '') {
-                    alert('Silakan masukkan kata kunci pencarian');
-                    return;
-                }
-                
-                // Tampilkan loading dan bersihkan hasil sebelumnya
-                loadingElement.style.display = 'block';
-                errorElement.style.display = 'none';
-                resultsContainer.innerHTML = '';
-                
-                // Lakukan request ke API
-                fetch(`https://api.ferdev.my.id/search/xnxx?query=${encodeURIComponent(query)}`, {
+        async function searchVideos() {
+            const query = document.getElementById('search-input').value;
+            const apiUrl = `https://api.ferdev.my.id/search/xnxx?query=${encodeURIComponent(query)}`;
+
+            try {
+                const response = await fetch(apiUrl, {
                     method: 'GET',
                     headers: {
-                        'accept': 'application/json'
+                        'accept': '*/*',
                     }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Sembunyikan loading
-                    loadingElement.style.display = 'none';
-                    
-                    // Tampilkan hasil
-                    if (data && data.results && data.results.length > 0) {
-                        displayResults(data.results); // Asumsikan API mengembalikan array hasil pencarian di 'results'
-                    } else {
-                        resultsContainer.innerHTML = '<p>Tidak ada hasil ditemukan</p>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    loadingElement.style.display = 'none';
-                    errorElement.style.display = 'block';
                 });
-            }
-            
-            // Fungsi untuk menampilkan hasil
-            function displayResults(videos) {
-                resultsContainer.innerHTML = '';
-                
-                videos.forEach(video => {
-                    const videoCard = document.createElement('div');
-                    videoCard.className = 'video-card';
-                    
-                    const thumbnail = document.createElement('img');
-                    thumbnail.className = 'video-thumbnail';
-                    thumbnail.src = video.thumbnail || 'https://via.placeholder.com/250x150';
-                    thumbnail.alt = video.title;
-                    
-                    const videoInfo = document.createElement('div');
-                    videoInfo.className = 'video-info';
-                    
-                    const title = document.createElement('div');
-                    title.className = 'video-title';
-                    title.textContent = video.title || 'Judul tidak tersedia';
-                    
-                    const duration = document.createElement('div');
-                    duration.className = 'video-duration';
-                    duration.textContent = video.duration || 'Durasi tidak diketahui';
-                    
-                    videoInfo.appendChild(title);
-                    videoInfo.appendChild(duration);
-                    
-                    videoCard.appendChild(thumbnail);
-                    videoCard.appendChild(videoInfo);
-                    
-                    // Tambahkan event click untuk membuka video
-                    videoCard.addEventListener('click', function() {
-                        if (video.url) {
-                            window.open(video.url, '_blank');
-                        }
-                    });
-                    
-                    resultsContainer.appendChild(videoCard);
-                });
-            }
-            
-            // Event listener untuk tombol search
-            searchButton.addEventListener('click', searchVideos);
-            
-            // Event listener untuk enter di input
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    searchVideos();
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayVideos(data.message.data);
+                } else {
+                    console.error('Error fetching data:', response.statusText);
+                    alert('Error fetching data. Please try again.');
                 }
+            } catch (error) {
+                console.error('Request failed:', error);
+                alert('Request failed. Please try again.');
+            }
+        }
+
+        function displayVideos(videos) {
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = '';
+
+            if (videos.length === 0) {
+                resultsContainer.innerHTML = '<p>No videos found.</p>';
+                return;
+            }
+
+            videos.forEach(video => {
+                const videoCard = document.createElement('div');
+                videoCard.classList.add('video-card');
+
+                const videoThumbnail = document.createElement('img');
+                videoThumbnail.classList.add('video-thumbnail');
+                videoThumbnail.src = video.thumbnail;
+                videoCard.appendChild(videoThumbnail);
+
+                const videoInfo = document.createElement('div');
+                videoInfo.classList.add('video-info');
+
+                const videoTitle = document.createElement('p');
+                videoTitle.classList.add('video-title');
+                videoTitle.textContent = video.title;
+                videoInfo.appendChild(videoTitle);
+
+                const videoDuration = document.createElement('p');
+                videoDuration.classList.add('video-duration');
+                videoDuration.textContent = video.duration;
+                videoInfo.appendChild(videoDuration);
+
+                const videoLink = document.createElement('a');
+                videoLink.href = video.link;
+                videoLink.target = '_blank';
+                videoLink.textContent = 'Watch Video';
+                videoInfo.appendChild(videoLink);
+
+                videoCard.appendChild(videoInfo);
+                resultsContainer.appendChild(videoCard);
             });
-        });
+        }
     </script>
 </body>
 </html>
