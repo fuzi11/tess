@@ -135,7 +135,7 @@
         async function searchVideos() {
             query = document.getElementById('search-input').value;
             currentPage = 1; // Reset ke halaman pertama saat melakukan pencarian baru
-            const apiUrl = `https://api.ferdev.my.id/search/xnxx?query=${encodeURIComponent(query)}&page=${currentPage}`;
+            const apiUrl = `https://api.ferdev.my.id/search/youtube?query=${encodeURIComponent(query)}&page=${currentPage}`;
 
             try {
                 const response = await fetch(apiUrl, {
