@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YOUTUBE KW</title>
+    <title>Telurku Video Search</title>
     <style>
         :root {
             /* Light theme colors */
@@ -418,7 +418,7 @@
         <i class="fas fa-moon"></i>
     </button>
 
-    <h1>YOUTUBE KW</h1>
+    <h1>Telurku Video Search</h1>
 
     <div class="search-container">
         <input type="text" id="search-input" placeholder="Cari video di YouTube..." 
@@ -451,6 +451,7 @@
             <h3 class="video-title-modal" id="video-title-modal"></h3>
         </div>
     </div>
+
     <script>
         // YouTube API Key - Replace with your own API key
         const YOUTUBE_API_KEY = 'AIzaSyAyGUZpiT20L05xTN04WAtCxbA10uS_2zA';
@@ -613,61 +614,6 @@
                 const videoCard = document.createElement('div');
                 videoCard.classList.add('video-card');
 
-        // Thumbnail container
-        const thumbnailContainer = document.createElement('div');
-        thumbnailContainer.classList.add('video-thumbnail-container');
-
-        const videoThumbnail = document.createElement('img');
-        videoThumbnail.classList.add('video-thumbnail');
-        videoThumbnail.src = video.thumbnail || 'https://via.placeholder.com/300x169?text=No+Thumbnail';
-        videoThumbnail.alt = video.title;
-        videoThumbnail.loading = "lazy";
-        thumbnailContainer.appendChild(videoThumbnail);
-
-        // Video info
-        const videoInfo = document.createElement('div');
-        videoInfo.classList.add('video-info');
-
-        const videoTitle = document.createElement('h3');
-        videoTitle.classList.add('video-title');
-        videoTitle.textContent = video.title || 'Judul tidak tersedia';
-        videoInfo.appendChild(videoTitle);
-
-        if (video.channel) {
-            const videoChannel = document.createElement('p');
-            videoChannel.classList.add('video-channel');
-            videoChannel.textContent = video.channel;
-            videoInfo.appendChild(videoChannel);
-        }
-
-        // Video actions
-        const videoActions = document.createElement('div');
-        videoActions.classList.add('video-actions');
-
-        const watchButton = document.createElement('button');
-        watchButton.classList.add('action-button', 'watch-button');
-        watchButton.textContent = 'Tonton';
-        watchButton.onclick = () => playVideo(video.videoId, video.title, video.thumbnail);
-        videoActions.appendChild(watchButton);
-
-        const fullscreenButton = document.createElement('button');
-        fullscreenButton.classList.add('action-button', 'fullscreen-button');
-        fullscreenButton.textContent = 'Fullscreen';
-        fullscreenButton.onclick = () => openVideoModal(video.videoId, video.title);
-        videoActions.appendChild(fullscreenButton);
-
-        const saveButton = document.createElement('button');
-        saveButton.classList.add('action-button', 'save-button');
-        saveButton.textContent = 'Save';
-        saveButton.onclick = () => saveVideo(video);
-        videoActions.appendChild(saveButton);
-
-        videoInfo.appendChild(videoActions);
-        videoCard.appendChild(thumbnailContainer);
-        videoCard.appendChild(videoInfo);
-        resultsContainer.appendChild(videoCard);
-    });
-}
                 // Thumbnail container
                 const thumbnailContainer = document.createElement('div');
                 thumbnailContainer.classList.add('video-thumbnail-container');
@@ -805,26 +751,6 @@
             document.getElementById('video-modal').style.display = 'flex';
         }
 
-// Callback when YouTube API is ready
-function onYouTubeIframeAPIReady() {
-    if (!window.videoToPlay) return;
-
-    youtubePlayer = new YT.Player('video-player', {
-        height: '100%',
-        width: '100%',
-        videoId: window.videoToPlay.videoId,
-        playerVars: {
-            'autoplay': 1,
-            'controls': 1,
-            'rel': 0,
-            'modestbranding': 1
-        },
-        events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
-        }
-    });
-}
         // Fungsi untuk membuka modal video dengan ads (official YouTube embed)
         function openVideoModal(videoId, title) {
             document.getElementById('video-player').innerHTML = `
@@ -895,147 +821,6 @@ function loadYouTubePlayerAPI(videoId, title) {
         function onPlayerStateChange(event) {
             // You can handle player state changes here if needed
         }
-function displayVideos(videos) {
-    const resultsContainer = document.getElementById('results-container');
-    resultsContainer.innerHTML = '';
-
-    if (!videos || videos.length === 0) {
-        resultsContainer.innerHTML = `
-            <div class="no-results">
-                <p>Tidak ditemukan video dengan kata kunci "${query}"</p>
-            </div>
-        `;
-        document.getElementById('pagination').innerHTML = '';
-        return;
-    }
-
-    videos.forEach(video => {
-        const videoCard = document.createElement('div');
-        videoCard.classList.add('video-card');
-
-        // Thumbnail container
-        const thumbnailContainer = document.createElement('div');
-        thumbnailContainer.classList.add('video-thumbnail-container');
-
-        const videoThumbnail = document.createElement('img');
-        videoThumbnail.classList.add('video-thumbnail');
-        videoThumbnail.src = video.thumbnail || 'https://via.placeholder.com/300x169?text=No+Thumbnail';
-        videoThumbnail.alt = video.title;
-        videoThumbnail.loading = "lazy";
-        thumbnailContainer.appendChild(videoThumbnail);
-
-        // Video info
-        const videoInfo = document.createElement('div');
-        videoInfo.classList.add('video-info');
-
-        const videoTitle = document.createElement('h3');
-        videoTitle.classList.add('video-title');
-        videoTitle.textContent = video.title || 'Judul tidak tersedia';
-        videoInfo.appendChild(videoTitle);
-
-        if (video.channel) {
-            const videoChannel = document.createElement('p');
-            videoChannel.classList.add('video-channel');
-            videoChannel.textContent = video.channel;
-            videoInfo.appendChild(videoChannel);
-        }
-
-        // Video actions
-        const videoActions = document.createElement('div');
-        videoActions.classList.add('video-actions');
-
-        const watchButton = document.createElement('button');
-        watchButton.classList.add('action-button', 'watch-button');
-        watchButton.textContent = 'Tonton';
-        watchButton.onclick = () => playVideo(video.videoId, video.title, video.thumbnail);
-        videoActions.appendChild(watchButton);
-
-        const fullscreenButton = document.createElement('button');
-        fullscreenButton.classList.add('action-button', 'fullscreen-button');
-        fullscreenButton.textContent = 'Fullscreen';
-        fullscreenButton.onclick = () => openVideoModal(video.videoId, video.title);
-        videoActions.appendChild(fullscreenButton);
-
-        const saveButton = document.createElement('button');
-        saveButton.classList.add('action-button', 'save-button');
-        saveButton.textContent = 'Save';
-        saveButton.onclick = () => saveVideo(video);
-        videoActions.appendChild(saveButton);
-
-        videoInfo.appendChild(videoActions);
-        videoCard.appendChild(thumbnailContainer);
-        videoCard.appendChild(videoInfo);
-        resultsContainer.appendChild(videoCard);
-    });
-}
-function saveVideo(video) {
-    let savedVideos = JSON.parse(localStorage.getItem('savedVideos')) || [];
-    savedVideos.push(video);
-    localStorage.setItem('savedVideos', JSON.stringify(savedVideos));
-    alert('Video saved successfully!');
-}
-function loadSavedVideos() {
-    const savedVideos = JSON.parse(localStorage.getItem('savedVideos')) || [];
-    const savedVideosContainer = document.getElementById('saved-videos-container');
-    savedVideosContainer.innerHTML = '';
-
-    if (savedVideos.length === 0) {
-        savedVideosContainer.innerHTML = '<p>No saved videos.</p>';
-        return;
-    }
-
-    savedVideos.forEach(video => {
-        const videoCard = document.createElement('div');
-        videoCard.classList.add('video-card');
-
-        const thumbnailContainer = document.createElement('div');
-        thumbnailContainer.classList.add('video-thumbnail-container');
-
-        const videoThumbnail = document.createElement('img');
-        videoThumbnail.classList.add('video-thumbnail');
-        videoThumbnail.src = video.thumbnail || 'https://via.placeholder.com/300x169?text=No+Thumbnail';
-        videoThumbnail.alt = video.title;
-        thumbnailContainer.appendChild(videoThumbnail);
-
-        const videoInfo = document.createElement('div');
-        videoInfo.classList.add('video-info');
-
-        const videoTitle = document.createElement('h3');
-        videoTitle.classList.add('video-title');
-        videoTitle.textContent = video.title || 'Judul tidak tersedia';
-        videoInfo.appendChild(videoTitle);
-
-        if (video.channel) {
-            const videoChannel = document.createElement('p');
-            videoChannel.classList.add('video-channel');
-            videoChannel.textContent = video.channel;
-            videoInfo.appendChild(videoChannel);
-        }
-
-        const videoActions = document.createElement('div');
-        videoActions.classList.add('video-actions');
-
-        const watchButton = document.createElement('button');
-        watchButton.classList.add('action-button', 'watch-button');
-        watchButton.textContent = 'Tonton';
-        watchButton.onclick = () => playVideo(video.videoId, video.title, video.thumbnail);
-        videoActions.appendChild(watchButton);
-
-        const fullscreenButton = document.createElement('button');
-        fullscreenButton.classList.add('action-button', 'fullscreen-button');
-        fullscreenButton.textContent = 'Fullscreen';
-        fullscreenButton.onclick = () => openVideoModal(video.videoId, video.title);
-        videoActions.appendChild(fullscreenButton);
-
-        videoInfo.appendChild(videoActions);
-        videoCard.appendChild(thumbnailContainer);
-        videoCard.appendChild(videoInfo);
-        savedVideosContainer.appendChild(videoCard);
-    });
-}
-
-// Load saved videos on page load
-document.addEventListener('DOMContentLoaded', loadSavedVideos);
     </script>
 </body>
 </html>
