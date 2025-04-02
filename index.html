@@ -96,6 +96,10 @@
         .pagination button:hover {
             background-color: #0056b3;
         }
+        .pagination button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -173,7 +177,14 @@
                 // Menambahkan thumbnail video
                 const videoThumbnail = document.createElement('img');
                 videoThumbnail.classList.add('video-thumbnail');
-                videoThumbnail.src = video.thumbnail || 'https://via.placeholder.com/250x150?text=No+Image'; // Placeholder image
+
+                // Cek apakah ada URL thumbnail
+                if (video.thumbnail && video.thumbnail !== "") {
+                    videoThumbnail.src = video.thumbnail;
+                } else {
+                    videoThumbnail.src = 'https://via.placeholder.com/250x150?text=No+Image'; // Placeholder image
+                }
+
                 videoCard.appendChild(videoThumbnail);
 
                 const videoInfo = document.createElement('div');
@@ -205,19 +216,19 @@
             const pagination = document.getElementById('pagination');
             pagination.innerHTML = ''; // Reset pagination
 
-            if (currentPage > 1) {
-                const prevButton = document.createElement('button');
-                prevButton.textContent = 'Previous';
-                prevButton.onclick = () => changePage(currentPage - 1);
-                pagination.appendChild(prevButton);
-            }
+            // Tombol Previous
+            const prevButton = document.createElement('button');
+            prevButton.textContent = 'Previous';
+            prevButton.disabled = currentPage === 1;
+            prevButton.onclick = () => changePage(currentPage - 1);
+            pagination.appendChild(prevButton);
 
-            if (currentPage < totalPages) {
-                const nextButton = document.createElement('button');
-                nextButton.textContent = 'Next';
-                nextButton.onclick = () => changePage(currentPage + 1);
-                pagination.appendChild(nextButton);
-            }
+            // Tombol Next
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'Next';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.onclick = () => changePage(currentPage + 1);
+            pagination.appendChild(nextButton);
         }
 
         // Fungsi untuk mengubah halaman
