@@ -625,7 +625,82 @@
             videos.forEach(video => {
                 const videoCard = document.createElement('div');
                 videoCard.classList.add('video-card');
+let videoQueue = [];
 
+function displayVideos(videos) {
+    videoQueue = videos; // Simpan daftar video ke dalam videoQueue
+    const resultsContainer = document.getElementById('results-container');
+    resultsContainer.innerHTML = '';
+
+    if (!videos || videos.length === 0) {
+        resultsContainer.innerHTML = `
+            <div class="no-results">
+                <p>Tidak ditemukan video dengan kata kunci "${query}"</p>
+            </div>
+        `;
+        document.getElementById('pagination').innerHTML = '';
+        return;
+    }
+
+    videos.forEach(video => {
+        const videoCard = document.createElement('div');
+        videoCard.classList.add('video-card');
+
+        // Thumbnail container
+        const thumbnailContainer = document.createElement('div');
+        thumbnailContainer.classList.add('video-thumbnail-container');
+
+        const videoThumbnail = document.createElement('img');
+        videoThumbnail.classList.add('video-thumbnail');
+        videoThumbnail.src = video.thumbnail || 'https://via.placeholder.com/300x169?text=No+Thumbnail';
+        videoThumbnail.alt = video.title;
+        videoThumbnail.loading = "lazy";
+        thumbnailContainer.appendChild(videoThumbnail);
+
+        // Video info
+        const videoInfo = document.createElement('div');
+        videoInfo.classList.add('video-info');
+
+        const videoTitle = document.createElement('h3');
+        videoTitle.classList.add('video-title');
+        videoTitle.textContent = video.title || 'Judul tidak tersedia';
+        videoInfo.appendChild(videoTitle);
+
+        if (video.channel) {
+            const videoChannel = document.createElement('p');
+            videoChannel.classList.add('video-channel');
+            videoChannel.textContent = video.channel;
+            videoInfo.appendChild(videoChannel);
+        }
+
+        // Video actions
+        const videoActions = document.createElement('div');
+        videoActions.classList.add('video-actions');
+
+        const watchButton = document.createElement('button');
+        watchButton.classList.add('action-button', 'watch-button');
+        watchButton.textContent = 'Tonton';
+        watchButton.onclick = () => playVideo(video.videoId, video.title, video.thumbnail);
+        videoActions.appendChild(watchButton);
+
+        const fullscreenButton = document.createElement('button');
+        fullscreenButton.classList.add('action-button', 'fullscreen-button');
+        fullscreenButton.textContent = 'Fullscreen';
+        fullscreenButton.onclick = () => openVideoModal(video.videoId, video.title);
+        videoActions.appendChild(fullscreenButton);
+
+        const saveButton = document.createElement('button');
+        saveButton.classList.add('action-button', 'save-button');
+        saveButton.textContent = 'Save';
+        saveButton.onclick = () => saveVideo(video);
+        videoActions.appendChild(saveButton);
+
+        videoInfo.appendChild(videoActions);
+        videoCard.appendChild(thumbnailContainer);
+        videoCard.appendChild(videoInfo);
+        resultsContainer.appendChild(videoCard);
+    });
+}
                 // Thumbnail container
                 const thumbnailContainer = document.createElement('div');
                 thumbnailContainer.classList.add('video-thumbnail-container');
@@ -762,7 +837,54 @@
             document.getElementById('video-title-modal').textContent = title || 'Video YouTube';
             document.getElementById('video-modal').style.display = 'flex';
         }
+let currentVideoIndex = 0;
 
+function playVideo(videoId, title) {
+    const videoPlayer = document.getElementById('video-player');
+    videoPlayer.innerHTML = `
+        <iframe width="100%" height="100%" 
+                src="https://www.youtube.com/embed/${videoId}?autoplay=1" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen></iframe>
+    `;
+    document.getElementById('video-title-modal').textContent = title || 'Video YouTube';
+    document.getElementById('video-modal').style.display = 'flex';
+    currentVideoIndex = videoQueue.findIndex(video => video.videoId === videoId);
+}
+
+function playNextVideo() {
+    currentVideoIndex = (currentVideoIndex + 1) % videoQueue.length; // Loop kembali ke awal jika sudah di akhir
+    const nextVideo = videoQueue[currentVideoIndex];
+    playVideo(nextVideo.videoId, nextVideo.title);
+}
+
+function onPlayerStateChange(event) {
+    if (event.data === YT.PlayerState.ENDED) {
+        playNextVideo();
+    }
+}
+
+// Callback when YouTube API is ready
+function onYouTubeIframeAPIReady() {
+    if (!window.videoToPlay) return;
+
+    youtubePlayer = new YT.Player('video-player', {
+        height: '100%',
+        width: '100%',
+        videoId: window.videoToPlay.videoId,
+        playerVars: {
+            'autoplay': 1,
+            'controls': 1,
+            'rel': 0,
+            'modestbranding': 1
+        },
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+        }
+    });
+}
         // Fungsi untuk membuka modal video dengan ads (official YouTube embed)
         function openVideoModal(videoId, title) {
             document.getElementById('video-player').innerHTML = `
